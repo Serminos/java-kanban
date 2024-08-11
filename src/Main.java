@@ -36,38 +36,38 @@ public class Main {
     }
 
     private static void testAddTasksAllType() {
-        taskManager.update(new Task("Task1", "Task1 description", TaskStatus.NEW));
-        taskManager.update(new Task("Task2", "Task2 description", TaskStatus.IN_PROGRESS));
-        taskManager.update(new Task("Task3", "Task3 description", TaskStatus.DONE));
+        taskManager.create(new Task("Task1", "Task1 description", TaskStatus.NEW));
+        taskManager.create(new Task("Task2", "Task2 description", TaskStatus.IN_PROGRESS));
+        taskManager.create(new Task("Task3", "Task3 description", TaskStatus.DONE));
 
-        Long epic1Id = taskManager.update(new Epic("Epic1", "Epic1 description"));
-        Long epic2Id = taskManager.update(new Epic("Epic2", "Epic2 description"));
-        Long epic3Id = taskManager.update(new Epic("Epic3", "Epic3 description"));
+        Long epic1Id = taskManager.create(new Epic("Epic1", "Epic1 description"));
+        Long epic2Id = taskManager.create(new Epic("Epic2", "Epic2 description"));
+        Long epic3Id = taskManager.create(new Epic("Epic3", "Epic3 description"));
 
-        taskManager.update(new SubTask(epic1Id,
+        taskManager.create(new SubTask(epic1Id,
                 "SubTask1-1", "Epic1 - SubTask1 description", TaskStatus.NEW));
-        taskManager.update(new SubTask(epic1Id,
+        taskManager.create(new SubTask(epic1Id,
                 "SubTask1-2", "Epic1 - SubTask2 description", TaskStatus.IN_PROGRESS));
-        taskManager.update(new SubTask(epic2Id,
+        taskManager.create(new SubTask(epic2Id,
                 "SubTask2-1", "Epic2 - SubTask1 description", TaskStatus.DONE));
-        taskManager.update(new SubTask(epic3Id,
+        taskManager.create(new SubTask(epic3Id,
                 "SubTask3-1", "Epic3 - SubTask1 description", TaskStatus.DONE));
     }
 
     private static void testCase1() {
         // Создайте две задачи, а также эпик с двумя подзадачами и эпик с одной подзадачей.
         System.out.println("---> case1 Создайте две задачи, а также эпик с двумя подзадачами и эпик с одной подзадачей.");
-        Long task1Id = taskManager.update(new Task("Task1", "Task1 description", TaskStatus.NEW));
-        Long task2Id = taskManager.update(new Task("Task2", "Task2 description", TaskStatus.IN_PROGRESS));
+        Long task1Id = taskManager.create(new Task("Task1", "Task1 description", TaskStatus.NEW));
+        Long task2Id = taskManager.create(new Task("Task2", "Task2 description", TaskStatus.IN_PROGRESS));
 
-        Long epic1Id = taskManager.update(new Epic("Epic1", "Epic1 description"));
-        Long epic2Id = taskManager.update(new Epic("Epic2", "Epic2 description"));
+        Long epic1Id = taskManager.create(new Epic("Epic1", "Epic1 description"));
+        Long epic2Id = taskManager.create(new Epic("Epic2", "Epic2 description"));
 
-        Long subTask11Id = taskManager.update(new SubTask(epic1Id,
+        Long subTask11Id = taskManager.create(new SubTask(epic1Id,
                 "SubTask1-1", "Epic1 - SubTask1 description", TaskStatus.NEW));
-        Long subTask12Id = taskManager.update(new SubTask(epic1Id,
+        Long subTask12Id = taskManager.create(new SubTask(epic1Id,
                 "SubTask1-2", "Epic1 - SubTask2 description", TaskStatus.DONE));
-        Long subTask21Id = taskManager.update(new SubTask(epic2Id,
+        Long subTask21Id = taskManager.create(new SubTask(epic2Id,
                 "SubTask2-1", "Epic2 - SubTask1 description", TaskStatus.DONE));
         // Распечатайте списки эпиков, задач и подзадач через
         System.out.println("---> case1 Распечатайте списки эпиков, задач и подзадач через");

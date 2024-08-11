@@ -17,7 +17,7 @@ public class TaskManager {
         return ++id;
     }
 
-    public Long update(Task task) {
+    public Long create(Task task) {
         if (task.getId() == null) {
             long newTaskId = nextId();
             task.setId(newTaskId);
@@ -26,7 +26,15 @@ public class TaskManager {
         return task.getId();
     }
 
-    public Long update(Epic epic) {
+    public boolean update(Task task) {
+        if (task.getId() != null) {
+            tasks.put(task.getId(), task);
+            return true;
+        }
+        return false;
+    }
+
+    public Long create(Epic epic) {
         if (epic.getId() == null) {
             long newTaskId = nextId();
             epic.setId(newTaskId);
@@ -35,7 +43,15 @@ public class TaskManager {
         return epic.getId();
     }
 
-    public Long update(SubTask subTask) {
+    public boolean update(Epic epic) {
+        if (epic.getId() != null) {
+            epics.put(epic.getId(), epic);
+            return true;
+        }
+        return false;
+    }
+
+    public Long create(SubTask subTask) {
         long newSubTaskId;
         if (subTask.getId() == null) {
             newSubTaskId = nextId();
@@ -52,16 +68,30 @@ public class TaskManager {
         return null;
     }
 
-    public Collection<Task> getTasks() {
-        return tasks.values();
+    public boolean update(SubTask subTask) {
+        if (subTask.getId() != null) {
+            long subTaskId = subTask.getId();
+            Epic epic = epics.get(subTask.getEpicId());
+            if (epic != null) {
+                subTasks.put(subTaskId, subTask);
+                epic.setSubTaskIds(subTaskId);
+                updateEpicStatus(epic);
+                return true;
+            }
+        }
+        return false;
     }
 
-    public Collection<Epic> getEpics() {
-        return epics.values();
+    public List<Task> getTasks() {
+        return tasks.values().stream().toList();
     }
 
-    public Collection<SubTask> getSubTasks() {
-        return subTasks.values();
+    public List<Epic> getEpics() {
+        return epics.values().stream().toList();
+    }
+
+    public List<SubTask> getSubTasks() {
+        return subTasks.values().stream().toList();
     }
 
     public Task getTask(Long id) {
@@ -92,6 +122,7 @@ public class TaskManager {
 
     public void clearEpics() {
         epics.clear();
+        subTasks.clear();
     }
 
     public void clearSubTasks() {
@@ -133,43 +164,27 @@ public class TaskManager {
         if (!epics.containsKey(epic.getId())) {
             return;
         }
-
         long epicSubTaskSize = epic.getSubTaskIds().size();
         if (epicSubTaskSize == 0) {
             epic.setStatus(TaskStatus.NEW);
             return;
         }
-
         List<SubTask> epicSubTasks = new ArrayList<>();
-        int cntDone = 0;
-        int cntNew = 0;
-
         epic.getSubTaskIds().forEach(subTaskId -> epicSubTasks.add(subTasks.get(subTaskId)));
 
-        for (SubTask subTask : epicSubTasks) {
-            if (subTask.getStatus() == TaskStatus.IN_PROGRESS) {
-                epic.setStatus(TaskStatus.IN_PROGRESS);
-                return;
-            }
-            if (subTask.getStatus() == TaskStatus.DONE) {
-                cntDone++;
-            }
-            if (subTask.getStatus() == TaskStatus.NEW) {
-                cntNew++;
-            }
-            if (cntDone != 0 && cntNew != 0) {
-                epic.setStatus(TaskStatus.IN_PROGRESS);
-                return;
-            }
+        long countInDone = epicSubTasks.stream().filter(subTask -> subTask.getStatus() == TaskStatus.DONE).count();
+        if (countInDone == epicSubTaskSize) {
+            epic.setStatus(TaskStatus.DONE);
+            return;
         }
 
-        if (cntDone == epicSubTaskSize) {
-            epic.setStatus(TaskStatus.DONE);
-        } else if (cntNew == epicSubTaskSize) {
+        long countInNew = epicSubTasks.stream().filter(subTask -> subTask.getStatus() == TaskStatus.NEW).count();
+        if (countInNew == epicSubTaskSize) {
             epic.setStatus(TaskStatus.NEW);
-        } else {
-            epic.setStatus(TaskStatus.IN_PROGRESS);
+            return;
         }
+
+        epic.setStatus(TaskStatus.IN_PROGRESS);
     }
 
     public List<String> getAllTasksText() {
