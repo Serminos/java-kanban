@@ -6,6 +6,10 @@ import java.util.List;
 public class Epic extends Task {
     private final List<Long> subTaskIds = new ArrayList<>();
 
+    public Epic(Long id, String name, String description) {
+        super(id, name, description);
+    }
+
     public Epic(String name, String description) {
         super(name, description);
     }
@@ -15,7 +19,15 @@ public class Epic extends Task {
     }
 
     public void setSubTaskIds(long id) {
-        if (!subTaskIds.contains(id)) subTaskIds.add(id);
+        if (!subTaskIds.contains(id)) {
+            subTaskIds.add(id);
+        }
+    }
+
+    public void setSubTaskIds(List<Long> ids) {
+        if (subTaskIds.isEmpty()) {
+            subTaskIds.addAll(ids);
+        }
     }
 
     @Override
