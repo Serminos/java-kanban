@@ -71,7 +71,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epics.get(subTask.getEpicId());
         if (epic != null) {
             subTasks.put(newSubTaskId, subTask);
-            epic.setSubTaskIds(newSubTaskId);
+            epic.setSubTaskId(newSubTaskId);
             updateEpicStatus(epic);
             return newSubTaskId;
         }
@@ -85,7 +85,7 @@ public class InMemoryTaskManager implements TaskManager {
             Epic epic = epics.get(subTask.getEpicId());
             if (epic != null) {
                 subTasks.put(subTaskId, subTask);
-                epic.setSubTaskIds(subTaskId);
+                epic.setSubTaskId(subTaskId);
                 updateEpicStatus(epic);
                 return true;
             }
@@ -242,6 +242,6 @@ public class InMemoryTaskManager implements TaskManager {
      */
     @Override
     public List<Task> getHistory() {
-        return historyManager.getHistory();
+        return List.copyOf(historyManager.getHistory());
     }
 }

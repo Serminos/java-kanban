@@ -27,7 +27,7 @@ class InMemoryHistoryManagerTest {
         Epic epic = new Epic(2L, "Испечь торт", "Испечь торт Наполеон");
         SubTask subTask = new SubTask(3L, 2L, "Найти рецепт",
                 "Выполнить поиск видео рецепта", TaskStatus.NEW);
-        epic.setSubTaskIds(3L);
+        epic.setSubTaskId(3L);
 
         // do
         inMemoryHistoryManager.add(task);
@@ -64,6 +64,24 @@ class InMemoryHistoryManagerTest {
         assertEquals("Найти рецепт", subTaskInHistory.getName());
         assertEquals("Выполнить поиск видео рецепта", subTaskInHistory.getDescription());
         assertEquals(TaskStatus.NEW, subTaskInHistory.getStatus());
+    }
 
+    @Test
+    void add_shouldNotAddNullValueTasksInHistory() {
+        // prepare
+        Task task = new Task(1L, "Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
+        Epic epic = new Epic(2L, "Испечь торт", "Испечь торт Наполеон");
+        SubTask subTask = new SubTask(3L, 2L, "Найти рецепт",
+                "Выполнить поиск видео рецепта", TaskStatus.NEW);
+        epic.setSubTaskId(3L);
+
+        // do
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(epic);
+        inMemoryHistoryManager.add(null);
+        inMemoryHistoryManager.add(subTask);
+
+        //check
+        assertEquals(3, inMemoryHistoryManager.getHistory().size());
     }
 }
