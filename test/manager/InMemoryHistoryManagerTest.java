@@ -38,15 +38,16 @@ class InMemoryHistoryManagerTest {
         inMemoryHistoryManager.add(task);
 
         //check
-        assertEquals(6, inMemoryHistoryManager.getHistory().size());
+        assertEquals(3, inMemoryHistoryManager.getHistory().size());
         List<Task> history = inMemoryHistoryManager.getHistory();
-        //Task
-        assertInstanceOf(Task.class, history.get(0));
-        Task taskInHistory = history.get(0);
-        assertEquals(1L, taskInHistory.getId());
-        assertEquals("Приготовить завтрак", taskInHistory.getName());
-        assertEquals("Сварить макароны и пожарить котлету", taskInHistory.getDescription());
-        assertEquals(TaskStatus.NEW, taskInHistory.getStatus());
+        //SubTask
+        assertInstanceOf(SubTask.class, history.get(0));
+        SubTask subTaskInHistory = (SubTask) history.get(0);
+        assertEquals(3L, subTaskInHistory.getId());
+        assertEquals(2L, subTaskInHistory.getEpicId());
+        assertEquals("Найти рецепт", subTaskInHistory.getName());
+        assertEquals("Выполнить поиск видео рецепта", subTaskInHistory.getDescription());
+        assertEquals(TaskStatus.NEW, subTaskInHistory.getStatus());
         //Epic
         assertInstanceOf(Epic.class, history.get(1));
         Epic epicInHistory = (Epic) history.get(1);
@@ -56,14 +57,13 @@ class InMemoryHistoryManagerTest {
         assertEquals(null, epicInHistory.getStatus());
         Assertions.assertArrayEquals(List.of(3L).toArray(),
                 epicInHistory.getSubTaskIds().toArray());
-        //SubTask
-        assertInstanceOf(SubTask.class, history.get(2));
-        SubTask subTaskInHistory = (SubTask) history.get(2);
-        assertEquals(3L, subTaskInHistory.getId());
-        assertEquals(2L, subTaskInHistory.getEpicId());
-        assertEquals("Найти рецепт", subTaskInHistory.getName());
-        assertEquals("Выполнить поиск видео рецепта", subTaskInHistory.getDescription());
-        assertEquals(TaskStatus.NEW, subTaskInHistory.getStatus());
+        //Task
+        assertInstanceOf(Task.class, history.get(2));
+        Task taskInHistory = history.get(2);
+        assertEquals(1L, taskInHistory.getId());
+        assertEquals("Приготовить завтрак", taskInHistory.getName());
+        assertEquals("Сварить макароны и пожарить котлету", taskInHistory.getDescription());
+        assertEquals(TaskStatus.NEW, taskInHistory.getStatus());
     }
 
     @Test
@@ -83,5 +83,27 @@ class InMemoryHistoryManagerTest {
 
         //check
         assertEquals(3, inMemoryHistoryManager.getHistory().size());
+    }
+
+    @Test
+    void add_shouldSaveOneLastViewActionInHistory() {
+        // prepare
+        Task task = new Task(1L, "Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
+
+        // do
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(task);
+        inMemoryHistoryManager.add(task);
+
+        //check
+        assertEquals(1, inMemoryHistoryManager.getHistory().size());
+        List<Task> history = inMemoryHistoryManager.getHistory();
+        //Task
+        assertInstanceOf(Task.class, history.get(0));
+        Task taskInHistory = history.get(0);
+        assertEquals(1L, taskInHistory.getId());
+        assertEquals("Приготовить завтрак", taskInHistory.getName());
+        assertEquals("Сварить макароны и пожарить котлету", taskInHistory.getDescription());
+        assertEquals(TaskStatus.NEW, taskInHistory.getStatus());
     }
 }

@@ -5,22 +5,57 @@ import models.SubTask;
 import models.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    protected final List<Task> history = new ArrayList<>();
-    final int lengthHistory = 10;
+    protected HashMap<Long, Node> history = new HashMap<>();
+    private Node head;
+    private Node tail;
 
     /**
      * @param task
      */
     @Override
     public void add(Task task) {
-        if (task == null) return;
-        if (history.size() == lengthHistory) {
-            history.remove(0);
+        if (task == null) {
+            return;
         }
-        history.add(task);
+        final long id = task.getId();
+        remove(id);
+        linkLast(task);
+        history.put(id, tail);
+    }
+
+    /**
+     * @param id
+     */
+    @Override
+    public void remove(Long id) {
+        final Node node = history.remove(id);
+        if (node == null) {
+            return;
+        }
+        removeNode(node);
+    }
+
+    private void removeNode(Node node) {
+        if (node.prev != null) {
+            node.prev.next = node.next;
+            if (node.next == null) {
+                tail = node.prev;
+            } else {
+                node.next.prev = node.prev;
+            }
+        } else {
+            head = node.next;
+            if (head == null) {
+                tail = null;
+            } else {
+                head.prev = null;
+            }
+        }
     }
 
     /**
@@ -28,25 +63,32 @@ public class InMemoryHistoryManager implements HistoryManager {
      */
     @Override
     public List<Task> getHistory() {
-        List<Task> listCopy = new ArrayList<>();
-        for (Task task : history) {
-            if (task instanceof SubTask actualSubTask) {
-                SubTask subTaskCopy = new SubTask(actualSubTask.getEpicId(), actualSubTask.getName(),
-                        actualSubTask.getDescription(), actualSubTask.getStatus());
-                subTaskCopy.setId(actualSubTask.getId());
-                listCopy.add(subTaskCopy);
-            } else if (task instanceof Epic actualEpicTask) {
-                Epic epicCopy = new Epic(actualEpicTask.getName(), actualEpicTask.getDescription());
-                epicCopy.setId(actualEpicTask.getId());
-                epicCopy.setStatus(actualEpicTask.getStatus());
-                epicCopy.setSubTaskIds(actualEpicTask.getSubTaskIds());
-                listCopy.add(epicCopy);
-            } else if (task instanceof Task) {
-                Task taskCopy = new Task(task.getName(), task.getDescription(), task.getStatus());
-                taskCopy.setId(task.getId());
-                listCopy.add(taskCopy);
-            }
+        return getTasks();
+    }
+
+    private void linkLast(Task task) {
+        final Node node = new Node(task, tail, null);
+        if (head == null) {
+            head = node;
+        } else {
+            tail.next = node;
         }
-        return listCopy;
+        tail = node;
+    }
+
+    /**
+     * @return List<Task>
+     */
+    private List<Task> getTasks() {
+        List<Task> listTasks = new ArrayList<>();
+        if (!history.isEmpty()) {
+            Node node = head;
+            while (node.next != null) {
+                listTasks.add(node.task);
+                node = node.next;
+            }
+            listTasks.add(node.task);
+        }
+        return listTasks;
     }
 }

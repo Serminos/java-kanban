@@ -459,11 +459,11 @@ class TaskManagerTest {
         List<Task> history = taskManager.getHistory();
 
         //check
-        assertEquals(10, history.size());
+        assertEquals(3, history.size());
     }
 
     @Test
-    void getHistory_shouldSaveDuplicateAndReturnNewValueAfterUpdate() {
+    void getHistory_shouldReplaceDuplicateAndReturnOneNewValueAfterUpdate() {
         // prepare
         Task task1 = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
         final Long savedTask1Id = taskManager.create(task1);
@@ -480,17 +480,11 @@ class TaskManagerTest {
         List<Task> history = taskManager.getHistory();
 
         //check
-        assertEquals(10, history.size());
-        for (int i = 0; i < 10; i++) {
-            if (i == 9) {
-                assertEquals("Task{id=1, name='Голодовка', description='Вода', status=NEW}",
-                        history.get(i).toString());
-            } else {
-                assertEquals("Task{id=1, name='Приготовить завтрак', description='Сварить макароны и пожарить котлету', status=NEW}",
-                        history.get(i).toString());
-            }
+        assertEquals(1, history.size());
+        assertEquals("Task{id=1, name='Голодовка', description='Вода', status=NEW}",
+                history.get(0).toString());
 
-        }
+
     }
 
 }
