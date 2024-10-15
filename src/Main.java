@@ -94,7 +94,7 @@ public class Main {
                 System.out.println("После удаления epicId1 история по нему НЕ очистилась");
             }
         }
-        if (taskManager.getHistory().isEmpty()){
+        if (taskManager.getHistory().isEmpty()) {
             System.out.println("Вся история очищена верно");
         }
     }
