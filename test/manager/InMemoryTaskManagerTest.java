@@ -12,13 +12,13 @@ public class InMemoryTaskManagerTest {
     private TaskManager taskManager;
 
     @BeforeEach
-    void init(){
+    void init() {
         taskManager = Managers.getDefault();
     }
 
     @Test
     void createTask_shouldSaveTask() {
-        Task task = new Task("задача_1","описание_1", TaskStatus.NEW);
+        Task task = new Task("задача_1", "описание_1", TaskStatus.NEW);
 
         Long savedTaskId = taskManager.create(task);
 
@@ -27,7 +27,7 @@ public class InMemoryTaskManagerTest {
 
     @Test
     void createEpic_shouldSaveEpic() {
-        Epic epic = new Epic("задача_1","описание_1");
+        Epic epic = new Epic("задача_1", "описание_1");
 
         Long savedEpicId = taskManager.create(epic);
 
