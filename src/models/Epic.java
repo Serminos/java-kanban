@@ -1,5 +1,7 @@
 package models;
 
+import enums.TaskStatus;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,10 @@ public class Epic extends Task {
 
     public Epic(Long id, String name, String description) {
         super(id, name, description);
+    }
+
+    public Epic(Long id, String name, String description, TaskStatus status) {
+        super(id, name, description, status);
     }
 
     public Epic(String name, String description) {
