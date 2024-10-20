@@ -10,6 +10,8 @@ import models.Task;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
@@ -22,6 +24,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     }
 
     private void save() {
+        if (!(file.canWrite())) {
+            throw new ManagerSaveException("Не удается сохранить файл по указанному пути: " + file.getAbsolutePath(), null);
+        }
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
             writer.write(CSV_HEADER + "\n");
             for (Task task : getTasks()) {
@@ -34,7 +39,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 writer.write(toString(subtask) + "\n");
             }
         } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка при сохранении данных", e);
+            throw new ManagerSaveException("Ошибка при сохранении в файл: " + file.getAbsolutePath(), e);
         }
     }
 
@@ -92,8 +97,28 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 Long epicId = Long.parseLong(epicIdString);
                 return new SubTask(id, epicId, name, description, taskStatus);
             default:
-                throw new ManagerSaveException("Неизвестный тип задачи: " + type, null);
+                throw new ManagerSaveException("Указан неизвестный тип задачи: " + type, null);
         }
+    }
+
+    private static List<String> readDataFromFile(File file) {
+        List<String> lines;
+        if (!file.canRead()) {
+            throw new ManagerSaveException("Не удается прочитать указанный файл: " + file.getAbsolutePath(), null);
+        }
+        if (file.length() == 0) {
+            throw new ManagerSaveException("Размер указанного файла равен нулю: " + file.getAbsolutePath(), null);
+        }
+        try {
+            lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка при чтении данных с файла: " + file.getAbsolutePath(), e);
+        }
+        if (lines.size() > 1 && !lines.get(0).equals(CSV_HEADER)) {
+            throw new ManagerSaveException("Формат CSV-файла не соответствует: " + file.getAbsolutePath()
+                    + " . Ожидается:" + CSV_HEADER, null);
+        }
+        return lines;
     }
 
     /**
@@ -101,12 +126,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
      * @return
      */
     public static FileBackedTaskManager loadFromFile(File file) {
+        List<String> dataFromFile = readDataFromFile(file);
         HistoryManager historyManager = Managers.getDefaultHistory();
         FileBackedTaskManager manager = new FileBackedTaskManager(historyManager, file);
-        try {
-            List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
-            for (int i = 1; i < lines.size(); i++) {
-                Task task = fromString(lines.get(i));
+        for (int i = 1; i < dataFromFile.size(); i++) {
+            try {
+                Task task = fromString(dataFromFile.get(i));
                 if (task instanceof SubTask subtask) {
                     manager.create(subtask);
                 } else if (task instanceof Epic epic) {
@@ -114,9 +139,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 } else {
                     manager.create(task);
                 }
+            } catch (Exception e) {
+                manager.clear();
+                throw new ManagerSaveException("При чтении файла: " + file.getAbsolutePath()
+                        + " . " + "Возникла ошибка при разборе строки № " + i, e);
             }
-        } catch (IOException e) {
-            throw new ManagerSaveException("Ошибка загрузки файла", e);
         }
         return manager;
     }
