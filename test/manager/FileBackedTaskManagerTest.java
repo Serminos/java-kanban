@@ -66,7 +66,6 @@ class FileBackedTaskManagerTest {
         try {
             try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
                 writer.write(CSV_HEADER + ",wrongcolumn" + "\n");
-                writer.write("1,TASK,Приготовить завтрак,NEW,Сварить макароны и пожарить котлету," + "\n");
             } catch (Exception ignored) {
             }
             FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);

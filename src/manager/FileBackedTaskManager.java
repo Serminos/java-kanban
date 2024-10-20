@@ -10,8 +10,6 @@ import models.Task;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
@@ -114,7 +112,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         } catch (IOException e) {
             throw new ManagerSaveException("Ошибка при чтении данных с файла: " + file.getAbsolutePath(), e);
         }
-        if (lines.size() > 1 && !lines.get(0).equals(CSV_HEADER)) {
+        if (lines.size() > 0 && !lines.get(0).equals(CSV_HEADER)) {
             throw new ManagerSaveException("Формат CSV-файла не соответствует: " + file.getAbsolutePath()
                     + " . Ожидается:" + CSV_HEADER, null);
         }
