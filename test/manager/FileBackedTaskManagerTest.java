@@ -11,17 +11,14 @@ import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
-import static junit.framework.TestCase.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+
     private File file;
-    private FileBackedTaskManager fileBackedTaskManager;
     private static final String CSV_HEADER = "id,type,name,status,description,epic";
 
     @BeforeEach
@@ -29,7 +26,7 @@ class FileBackedTaskManagerTest {
         try {
             file = File.createTempFile("test", ".csv");
             file.deleteOnExit();
-            fileBackedTaskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), file);
+            taskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), file);
         } catch (IOException e) {
             throw new RuntimeException("Не удалось создать файл", e);
         }
@@ -38,88 +35,70 @@ class FileBackedTaskManagerTest {
     @Test
     void shouldExceptionWhenLoadEmptyFile() {
         // do
-        try {
+        assertThrows(ManagerSaveException.class, () -> {
             FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
-            Assertions.fail("Проверка должна выдать исключение");
-        } catch (ManagerSaveException e) {
-            //check
-            assertEquals("Размер указанного файла равен нулю: " + file.getAbsolutePath(), e.getMessage());
-        }
+        }, "Проверка указанного файла должна выдать исключение: " + file.getAbsolutePath());
     }
 
     @Test
     void shouldExceptionWhenLoadIfFileNotExist() {
         // do
-        try {
+        assertThrows(ManagerSaveException.class, () -> {
             file.delete();
             FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
-            Assertions.fail("Проверка должна выдать исключение");
-        } catch (ManagerSaveException e) {
-            //check
-            assertEquals("Не удается прочитать указанный файл: " + file.getAbsolutePath(), e.getMessage());
-        }
+        }, "Проверка указанного файла должна выдать исключение: " + file.getAbsolutePath());
     }
 
     @Test
     void shouldExceptionWhenLoadIfWrongHeaderFormat() {
         // do
-        try {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+        assertThrows(ManagerSaveException.class, () -> {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
                 writer.write(CSV_HEADER + ",wrongcolumn" + "\n");
             } catch (Exception ignored) {
             }
             FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
-            Assertions.fail("Проверка должна выдать исключение");
-        } catch (ManagerSaveException e) {
-            //check
-            assertEquals("Формат CSV-файла не соответствует: " + file.getAbsolutePath()
-                    + " . Ожидается:" + CSV_HEADER, e.getMessage());
-        }
+        }, "Формат CSV-файла не соответствует. Должно выдать исключение: " + file.getAbsolutePath());
     }
 
     @Test
     void shouldExceptionWhenLoadIfWrongDataFormat() {
         // do
-        try {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+        assertThrows(ManagerSaveException.class, () -> {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
                 writer.write(CSV_HEADER + "\n");
                 writer.write("1,TASK123,Приготовить завтрак,NEW,Сварить макароны и пожарить котлету," + "\n");
             } catch (Exception ignored) {
             }
             FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
-            Assertions.fail("Проверка должна выдать исключение");
-        } catch (ManagerSaveException e) {
-            //check
-            assertEquals("При чтении файла: " + file.getAbsolutePath()
-                    + " . Возникла ошибка при разборе строки № 1", e.getMessage());
-        }
+        }, "Проверка указанного файла должна выдать исключение: " + file.getAbsolutePath());
     }
 
     @Test
     void shouldExceptionWhenSaveWrongPath() {
-        try {
+        assertThrows(ManagerSaveException.class, () -> {
             // prepare
             file = File.createTempFile("test", ".csv");
             file.delete();
-            fileBackedTaskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), file);
-            Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
+            taskManager = new FileBackedTaskManager(Managers.getDefaultHistory(), file);
+            Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету",
+                    TaskStatus.NEW, LocalDateTime.of(2024, 10, 21, 19, 0),
+                    Duration.ofMinutes(60)
+            );
 
             // do
-            final Long savedTaskId = fileBackedTaskManager.create(task);
-            Assertions.fail("Проверка должна выдать исключение");
-        } catch (ManagerSaveException e) {
-            //check
-            assertEquals("Не удается сохранить файл по указанному пути: " + file.getAbsolutePath(), e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            final Long savedTaskId = taskManager.create(task);
+        }, "Проверка указанного файла должна выдать исключение: " + file.getAbsolutePath());
     }
 
     @Test
     void shouldNotExceptionIfDoesNotHaveData() {
         // do
         try {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
                 writer.write(CSV_HEADER + "\n");
             } catch (Exception ignored) {
             }
@@ -133,14 +112,19 @@ class FileBackedTaskManagerTest {
     @Test
     void shouldSaveAndLoadEmptyTasks() {
         // prepare
-        Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
+        Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету",
+                TaskStatus.NEW, LocalDateTime.of(2024, 10, 21, 19, 0),
+                Duration.ofMinutes(60)
+        );
         Epic epic = new Epic("Испечь торт", "Испечь торт Наполеон");
-        final Long savedTaskId = fileBackedTaskManager.create(task);
-        final Long savedEpicId = fileBackedTaskManager.create(epic);
+        final Long savedTaskId = taskManager.create(task);
+        final Long savedEpicId = taskManager.create(epic);
         SubTask subTask = new SubTask(savedEpicId, "Найти рецепт",
-                "Выполнить поиск видео рецепта", TaskStatus.NEW);
-        final Long savedSubTaskId = fileBackedTaskManager.create(subTask);
-        fileBackedTaskManager.clear();
+                "Выполнить поиск видео рецепта", TaskStatus.NEW,
+                LocalDateTime.of(2024, 11, 21, 19, 0), Duration.ofMinutes(60)
+        );
+        final Long savedSubTaskId = taskManager.create(subTask);
+        taskManager.clear();
 
         // do
         FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
@@ -155,23 +139,28 @@ class FileBackedTaskManagerTest {
     @Test
     void shouldSaveAndLoadDifferentTasks() {
         // prepare
-        Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету", TaskStatus.NEW);
+        Task task = new Task("Приготовить завтрак", "Сварить макароны и пожарить котлету",
+                TaskStatus.NEW, LocalDateTime.of(2024, 10, 21, 19, 0),
+                Duration.ofMinutes(60)
+        );
         Epic epic = new Epic("Испечь торт", "Испечь торт Наполеон");
-        final Long savedTaskId = fileBackedTaskManager.create(task);
-        final Long savedEpicId = fileBackedTaskManager.create(epic);
+        final Long savedTaskId = taskManager.create(task);
+        final Long savedEpicId = taskManager.create(epic);
         SubTask subTask = new SubTask(savedEpicId, "Найти рецепт",
-                "Выполнить поиск видео рецепта", TaskStatus.NEW);
-        final Long savedSubTaskId = fileBackedTaskManager.create(subTask);
+                "Выполнить поиск видео рецепта", TaskStatus.NEW,
+                LocalDateTime.of(2024, 11, 21, 19, 0), Duration.ofMinutes(60)
+        );
+        final Long savedSubTaskId = taskManager.create(subTask);
 
         // do
         FileBackedTaskManager testManager = FileBackedTaskManager.loadFromFile(file);
 
         //check
-        assertEquals(fileBackedTaskManager.getTasks().size(), testManager.getTasks().size());
-        assertEquals(fileBackedTaskManager.getTasks().get(0), testManager.getTasks().get(0));
-        assertEquals(fileBackedTaskManager.getEpics().size(), testManager.getEpics().size());
-        assertEquals(fileBackedTaskManager.getEpics().get(0), testManager.getEpics().get(0));
-        assertEquals(fileBackedTaskManager.getSubTasks().size(), testManager.getSubTasks().size());
-        assertEquals(fileBackedTaskManager.getSubTasks().get(0), testManager.getSubTasks().get(0));
+        assertEquals(taskManager.getTasks().size(), testManager.getTasks().size());
+        assertEquals(taskManager.getTasks().get(0), testManager.getTasks().get(0));
+        assertEquals(taskManager.getEpics().size(), testManager.getEpics().size());
+        assertEquals(taskManager.getEpics().get(0), testManager.getEpics().get(0));
+        assertEquals(taskManager.getSubTasks().size(), testManager.getSubTasks().size());
+        assertEquals(taskManager.getSubTasks().get(0), testManager.getSubTasks().get(0));
     }
 }

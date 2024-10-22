@@ -2,6 +2,8 @@ package models;
 
 import enums.TaskStatus;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -9,6 +11,8 @@ public class Task {
     private String name;
     private String description;
     private TaskStatus status;
+    Duration duration;
+    LocalDateTime startTime;
 
     public Task(String name, String description) {
         this.name = name;
@@ -21,11 +25,21 @@ public class Task {
         this.status = status;
     }
 
-    public Task(Long id, String name, String description, TaskStatus status) {
+    public Task(String name, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public Task(Long id, String name, String description, TaskStatus status, LocalDateTime startTime, Duration duration) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Task(Long id, String name, String description) {
@@ -33,6 +47,20 @@ public class Task {
         this.name = name;
         this.description = description;
         this.status = null;
+    }
+
+    public Task(Long id, String name, String description, TaskStatus status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+    }
+
+    public Task(String name, String description, LocalDateTime startTime, Duration duration) {
+        this.name = name;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Long getId() {
@@ -65,6 +93,21 @@ public class Task {
 
     public void setStatus(TaskStatus status) {
         this.status = status;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public Duration getDuration() {
+        return (duration!=null) ? duration : Duration.ZERO;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) {
+            return null;
+        }
+        return startTime.plus(duration);
     }
 
     @Override

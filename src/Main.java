@@ -4,6 +4,8 @@ import models.Epic;
 import models.SubTask;
 import models.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Main {
@@ -26,11 +28,17 @@ public class Main {
         // Создайте две задачи, эпик с тремя подзадачами и эпик без подзадач.
         final Long epicId1 = taskManager.create(new Epic("Испечь торт", "Испечь торт Наполеон"));
         final Long subTaskId1 = taskManager.create(new SubTask(epicId1, "Найти рецепт ютуб",
-                "Выполнить поиск видео рецепта", TaskStatus.NEW));
+                "Выполнить поиск видео рецепта", TaskStatus.NEW,
+                LocalDateTime.of(2024, 10, 21, 19, 0), Duration.ofMinutes(60))
+        );
         final Long subTaskId2 = taskManager.create(new SubTask(epicId1, "Найти рецепт библиотека",
-                "Выполнить поиск видео рецепта в книгах", TaskStatus.NEW));
+                "Выполнить поиск видео рецепта в книгах", TaskStatus.NEW,
+                LocalDateTime.of(2024, 11, 21, 19, 0), Duration.ofMinutes(60))
+        );
         final Long subTaskId3 = taskManager.create(new SubTask(epicId1, "Найти рецепт знакомые",
-                "Опросить знакомых", TaskStatus.NEW));
+                "Опросить знакомых", TaskStatus.NEW,
+                LocalDateTime.of(2024, 12, 21, 19, 0), Duration.ofMinutes(60))
+        );
         final Long epicId2 = taskManager.create(new Epic("Испечь торт", "Испечь торт Красный бархат"));
         // Запросите созданные задачи несколько раз в разном порядке.
         Random random = new Random();

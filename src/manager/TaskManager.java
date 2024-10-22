@@ -24,9 +24,9 @@ public interface TaskManager {
 
     Epic getEpic(Long id);
 
-    List<SubTask> getAllSubTasksByEpicId(Long id);
-
     SubTask getSubTask(Long id);
+
+    List<SubTask> getAllSubTasksByEpicId(Long id);
 
     void clearTasks();
 
@@ -47,4 +47,6 @@ public interface TaskManager {
     Task getById(Long id);
 
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks(boolean sort);
 }
