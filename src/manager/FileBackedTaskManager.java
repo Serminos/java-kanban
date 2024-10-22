@@ -143,7 +143,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         FileBackedTaskManager manager = new FileBackedTaskManager(historyManager, file);
         for (int i = 1; i < dataFromFile.size(); i++) {
             try {
-                System.out.println(dataFromFile.get(i));
                 Task task = fromString(dataFromFile.get(i));
                 if (task instanceof SubTask subtask) {
                     manager.create(subtask);
