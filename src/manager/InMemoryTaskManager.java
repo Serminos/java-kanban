@@ -74,7 +74,6 @@ public class InMemoryTaskManager implements TaskManager {
                 throw new TaskValidationException("Указанное время уже занято, задачей: " + taskIntercepted.get());
             }
             sortedTasks.add(epic);
-            System.out.println(sortedTasks);
         }
         epics.put(epic.getId(), epic);
         return epic.getId();
@@ -375,8 +374,6 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean isTaskTermIntercept(Task task1, Task task2) {
-        System.out.println(task1);
-        System.out.println(task2);
         if (task1.getStartTime().isBefore(task2.getEndTime()) && task2.getStartTime().isBefore(task1.getEndTime())) {
             return true;
         }
