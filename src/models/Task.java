@@ -100,7 +100,7 @@ public class Task {
     }
 
     public Duration getDuration() {
-        return (duration!=null) ? duration : Duration.ZERO;
+        return (duration != null) ? duration : Duration.ZERO;
     }
 
     public LocalDateTime getEndTime() {
