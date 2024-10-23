@@ -374,6 +374,12 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean isTaskTermIntercept(Task task1, Task task2) {
+        if (task1.getStartTime().isEqual(task2.getEndTime())) {
+            return false;
+        }
+        if (task2.getStartTime().isEqual(task1.getEndTime())) {
+            return false;
+        }
         if (task1.getStartTime().isBefore(task2.getEndTime()) && task2.getStartTime().isBefore(task1.getEndTime())) {
             return true;
         }
