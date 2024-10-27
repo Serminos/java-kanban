@@ -46,7 +46,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void postEpic(Epic epic, HttpExchange exchange) {
+    private void postEpic(Epic epic, HttpExchange exchange) throws IOException {
         try {
             Long id = taskManager.update(epic) ? epic.getId() : taskManager.create(epic);
             sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
@@ -55,12 +55,12 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void deleteEpic(Long id, HttpExchange exchange) {
+    private void deleteEpic(Long id, HttpExchange exchange) throws IOException {
         taskManager.removeEpic(id);
         sendResponse(exchange, gson.toJson(Map.of("id", id)), 200);
     }
 
-    private void getEpic(Long id, HttpExchange exchange) {
+    private void getEpic(Long id, HttpExchange exchange) throws IOException {
         Epic epic = taskManager.getEpic(id);
         if (epic == null) {
             sendResponse(exchange, gson.toJson((Object) null), 404);
@@ -68,7 +68,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         sendResponse(exchange, gson.toJson(epic), 200);
     }
 
-    private void getEpicSubTasks(Long id, HttpExchange exchange) {
+    private void getEpicSubTasks(Long id, HttpExchange exchange) throws IOException {
         Epic epic = taskManager.getEpic(id);
         if (epic == null) {
             sendResponse(exchange, gson.toJson((Object) null), 404);
@@ -84,7 +84,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         sendResponse(exchange, gson.toJson(subTasks), 200);
     }
 
-    private void getEpics(HttpExchange exchange) {
+    private void getEpics(HttpExchange exchange) throws IOException {
         List<Epic> allEpics = taskManager.getEpics();
         if (allEpics == null) {
             sendResponse(exchange, gson.toJson((Object) null), 404);

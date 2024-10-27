@@ -21,7 +21,7 @@ public class BaseHttpHandler {
             .setPrettyPrinting()
             .create();
 
-    void sendResponse(HttpExchange exchange, String text, int responseCode) {
+    void sendResponse(HttpExchange exchange, String text, int responseCode) throws IOException {
         try (OutputStream os = exchange.getResponseBody()) {
             byte[] response = text.getBytes(DEFAULT_CHARSET);
             exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
@@ -32,7 +32,6 @@ public class BaseHttpHandler {
                 byte[] response = e.getMessage().getBytes(DEFAULT_CHARSET);
                 exchange.sendResponseHeaders(500, e.getMessage().length());
                 os.write(response);
-            } catch (IOException ex) {
             }
         }
     }

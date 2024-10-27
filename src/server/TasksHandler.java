@@ -39,21 +39,21 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
         }
     }
 
-    private void postTask(Task task, HttpExchange exchange) {
+    private void postTask(Task task, HttpExchange exchange) throws IOException {
         try {
             Long id = (taskManager.update(task)) ? task.getId() : taskManager.create(task);
             sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
         } catch (TaskValidationException e) {
-            sendResponse(exchange, gson.toJson(e.getMessage()),406);
+            sendResponse(exchange, gson.toJson(e.getMessage()), 406);
         }
     }
 
-    private void deleteTask(Long id, HttpExchange exchange) {
+    private void deleteTask(Long id, HttpExchange exchange) throws IOException {
         taskManager.removeTask(id);
         sendResponse(exchange, gson.toJson(Map.of("id", id)), 200);
     }
 
-    private void getTask(Long id, HttpExchange exchange) {
+    private void getTask(Long id, HttpExchange exchange) throws IOException {
         Task task = taskManager.getTask(id);
         if (task == null) {
             sendResponse(exchange, gson.toJson((Object) null), 404);
@@ -61,7 +61,7 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
         sendResponse(exchange, gson.toJson(task), 200);
     }
 
-    private void getTasks(HttpExchange exchange) {
+    private void getTasks(HttpExchange exchange) throws IOException {
         List<Task> allTasks = taskManager.getTasks();
         if (allTasks.isEmpty()) {
             sendResponse(exchange, gson.toJson(allTasks), 200);
