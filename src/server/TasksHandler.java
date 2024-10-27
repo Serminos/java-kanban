@@ -35,61 +35,40 @@ public class TasksHandler extends BaseHttpHandler implements HttpHandler {
             Long id = Long.parseLong(path[2]);
             deleteTask(id, exchange);
         } else {
-            sendBadRequest(exchange);
+            sendResponse(exchange, "Bad Request", 400);
         }
     }
 
     private void postTask(Task task, HttpExchange exchange) {
         try {
             Long id = (taskManager.update(task)) ? task.getId() : taskManager.create(task);
-            sendText(exchange, gson.toJson(Map.of("id", id)), 201);
+            sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
         } catch (TaskValidationException e) {
-            sendHasInteractions(exchange, gson.toJson(e.getMessage()));
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
+            sendResponse(exchange, gson.toJson(e.getMessage()),406);
         }
     }
 
     private void deleteTask(Long id, HttpExchange exchange) {
         taskManager.removeTask(id);
-        try {
-            sendText(exchange, gson.toJson(Map.of("id", id)), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, e.getMessage());
-        }
+        sendResponse(exchange, gson.toJson(Map.of("id", id)), 200);
     }
 
     private void getTask(Long id, HttpExchange exchange) {
         Task task = taskManager.getTask(id);
         if (task == null) {
-            try {
-                sendNotFound(exchange, gson.toJson((Object) null));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson((Object) null), 404);
         }
-        try {
-            sendText(exchange, gson.toJson(task), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(task), 200);
     }
 
     private void getTasks(HttpExchange exchange) {
         List<Task> allTasks = taskManager.getTasks();
         if (allTasks.isEmpty()) {
-            try {
-                sendText(exchange, gson.toJson(allTasks), 200);
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson(allTasks), 200);
+
         }
         String jsonAllTasks = gson.toJson(allTasks);
-        try {
-            sendText(exchange, jsonAllTasks, 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, jsonAllTasks, 200);
     }
 
     private Task parseTask(HttpExchange exchange) throws IOException {

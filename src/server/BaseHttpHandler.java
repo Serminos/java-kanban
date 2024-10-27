@@ -21,48 +21,19 @@ public class BaseHttpHandler {
             .setPrettyPrinting()
             .create();
 
-    void sendText(HttpExchange exchange, String text, int responseCode) throws IOException {
+    void sendResponse(HttpExchange exchange, String text, int responseCode){
         try (OutputStream os = exchange.getResponseBody()) {
             byte[] response = text.getBytes(DEFAULT_CHARSET);
             exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
             exchange.sendResponseHeaders(responseCode, response.length);
             os.write(response);
-        }
-    }
-
-    void sendNotFound(HttpExchange exchange, String message) throws IOException {
-        try (OutputStream os = exchange.getResponseBody()) {
-            byte[] response = message.getBytes(DEFAULT_CHARSET);
-            exchange.sendResponseHeaders(404, 0);
-            os.write(response);
-        }
-    }
-
-    void sendBadRequest(HttpExchange exchange) throws IOException {
-        try (OutputStream os = exchange.getResponseBody()) {
-            byte[] response = "Bad Request".getBytes(DEFAULT_CHARSET);
-            exchange.sendResponseHeaders(400, 0);
-            os.write(response);
-        }
-    }
-
-    void sendHasInteractions(HttpExchange exchange, String message) {
-        try (OutputStream os = exchange.getResponseBody()) {
-            byte[] response = message.getBytes(DEFAULT_CHARSET);
-            exchange.sendResponseHeaders(406, 0);
-            os.write(response);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    void sendInternalServerError(HttpExchange exchange, String message) {
-        try (OutputStream os = exchange.getResponseBody()) {
-            byte[] response = message.getBytes(DEFAULT_CHARSET);
-            exchange.sendResponseHeaders(500, 0);
-            os.write(response);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            try (OutputStream os = exchange.getResponseBody()) {
+                byte[] response = e.getMessage().getBytes(DEFAULT_CHARSET);
+                exchange.sendResponseHeaders(500, e.getMessage().length());
+                os.write(response);
+            } catch (IOException ex) {
+            }
         }
     }
 }

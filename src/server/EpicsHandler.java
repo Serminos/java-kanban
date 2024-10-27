@@ -42,88 +42,54 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             id = Long.parseLong(path[2]);
             deleteEpic(id, exchange);
         } else {
-            sendBadRequest(exchange);
+            sendResponse(exchange,"Bad Request",400);
         }
     }
 
     private void postEpic(Epic epic, HttpExchange exchange) {
         try {
             Long id = taskManager.update(epic) ? epic.getId() : taskManager.create(epic);
-            sendText(exchange, gson.toJson(Map.of("id", id)), 201);
+            sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
         } catch (TaskValidationException e) {
-            sendHasInteractions(exchange, gson.toJson(e.getMessage()));
-        } catch (Exception e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
+            sendResponse(exchange, gson.toJson(e.getMessage()),406);
         }
     }
 
     private void deleteEpic(Long id, HttpExchange exchange) {
         taskManager.removeEpic(id);
-        try {
-            sendText(exchange, gson.toJson(Map.of("id", id)), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, e.getMessage());
-        }
+        sendResponse(exchange, gson.toJson(Map.of("id", id)), 200);
     }
 
     private void getEpic(Long id, HttpExchange exchange) {
         Epic epic = taskManager.getEpic(id);
         if (epic == null) {
-            try {
-                sendNotFound(exchange, gson.toJson((Object) null));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson((Object) null), 404);
         }
-        try {
-            sendText(exchange, gson.toJson(epic), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(epic), 200);
     }
 
     private void getEpicSubTasks(Long id, HttpExchange exchange) {
         Epic epic = taskManager.getEpic(id);
         if (epic == null) {
-            try {
-                sendNotFound(exchange, gson.toJson((Object) null));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson((Object) null), 404);
         }
         List<Long> subtasksId = epic.getSubTaskIds();
         if (subtasksId.isEmpty()) {
-            try {
-                sendNotFound(exchange, gson.toJson(subtasksId));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson(subtasksId),404);
         }
         List<SubTask> subTasks = new ArrayList<>();
         for (Long sub : subtasksId) {
             subTasks.add(taskManager.getSubTask(sub));
         }
-        try {
-            sendText(exchange, gson.toJson(subTasks), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(subTasks), 200);
     }
 
     private void getEpics(HttpExchange exchange) {
         List<Epic> allEpics = taskManager.getEpics();
         if (allEpics == null) {
-            try {
-                sendNotFound(exchange, gson.toJson((Object) null));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson((Object) null),404);
         }
-        try {
-            sendText(exchange, gson.toJson(allEpics), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(allEpics), 200);
     }
 
     private Epic parseEpic(HttpExchange exchange) throws IOException {

@@ -15,11 +15,8 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) {
-        try {
-            sendText(exchange, gson.toJson(taskManager.getPrioritizedTasks(true)), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+    public void handle(HttpExchange exchange) throws IOException {
+        sendResponse(exchange, gson.toJson(taskManager.getPrioritizedTasks(true)), 200);
+
     }
 }

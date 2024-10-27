@@ -28,7 +28,7 @@ public class SubTasksHandler extends BaseHttpHandler implements HttpHandler {
             getSubTasks(exchange);
         } else if (method.equals("GET") && path.length == 3) {
             getSubTask(Long.parseLong(path[2]), exchange);
-        } else if (method.equals("POST")  && path.length == 2) {
+        } else if (method.equals("POST") && path.length == 2) {
             SubTask subTask = parseSubTask(exchange);
             postSubTask(subTask, exchange);
         } else if (method.equals("DELETE") && path.length == 3) {
@@ -39,53 +39,31 @@ public class SubTasksHandler extends BaseHttpHandler implements HttpHandler {
     private void postSubTask(SubTask subTask, HttpExchange exchange) {
         try {
             Long id = taskManager.update(subTask) ? subTask.getId() : taskManager.create(subTask);
-            sendText(exchange, gson.toJson(Map.of("id", id)), 201);
+            sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
         } catch (TaskValidationException e) {
-            sendHasInteractions(exchange, gson.toJson(e.getMessage()));
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
+            sendResponse(exchange, gson.toJson(e.getMessage()), 406);
         }
     }
 
     private void getSubTask(Long id, HttpExchange exchange) {
         SubTask subTask = taskManager.getSubTask(id);
         if (subTask == null) {
-            try {
-                sendNotFound(exchange, gson.toJson((Object) null));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson((Object) null), 404);
         }
-        try {
-            sendText(exchange, gson.toJson(subTask), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(subTask), 200);
     }
 
     private void getSubTasks(HttpExchange exchange) {
         List<SubTask> allSubTasks = taskManager.getSubTasks();
         if (allSubTasks == null) {
-            try {
-                sendNotFound(exchange, gson.toJson(allSubTasks));
-            } catch (IOException e) {
-                sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-            }
+            sendResponse(exchange, gson.toJson(allSubTasks), 404);
         }
-        try {
-            sendText(exchange, gson.toJson(allSubTasks), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, gson.toJson(e.getMessage()));
-        }
+        sendResponse(exchange, gson.toJson(allSubTasks), 200);
     }
 
     private void deleteSubTask(Long id, HttpExchange exchange) {
         taskManager.removeSubTask(id);
-        try {
-            sendText(exchange, gson.toJson(id), 200);
-        } catch (IOException e) {
-            sendInternalServerError(exchange, e.getMessage());
-        }
+        sendResponse(exchange, gson.toJson(id), 200);
     }
 
     private SubTask parseSubTask(HttpExchange exchange) throws IOException {
