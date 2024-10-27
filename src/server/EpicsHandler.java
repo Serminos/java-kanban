@@ -42,7 +42,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             id = Long.parseLong(path[2]);
             deleteEpic(id, exchange);
         } else {
-            sendResponse(exchange,"Bad Request",400);
+            sendResponse(exchange, "Bad Request", 400);
         }
     }
 
@@ -51,7 +51,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
             Long id = taskManager.update(epic) ? epic.getId() : taskManager.create(epic);
             sendResponse(exchange, gson.toJson(Map.of("id", id)), 201);
         } catch (TaskValidationException e) {
-            sendResponse(exchange, gson.toJson(e.getMessage()),406);
+            sendResponse(exchange, gson.toJson(e.getMessage()), 406);
         }
     }
 
@@ -75,7 +75,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         }
         List<Long> subtasksId = epic.getSubTaskIds();
         if (subtasksId.isEmpty()) {
-            sendResponse(exchange, gson.toJson(subtasksId),404);
+            sendResponse(exchange, gson.toJson(subtasksId), 404);
         }
         List<SubTask> subTasks = new ArrayList<>();
         for (Long sub : subtasksId) {
@@ -87,7 +87,7 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
     private void getEpics(HttpExchange exchange) {
         List<Epic> allEpics = taskManager.getEpics();
         if (allEpics == null) {
-            sendResponse(exchange, gson.toJson((Object) null),404);
+            sendResponse(exchange, gson.toJson((Object) null), 404);
         }
         sendResponse(exchange, gson.toJson(allEpics), 200);
     }
