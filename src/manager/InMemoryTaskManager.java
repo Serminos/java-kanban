@@ -73,7 +73,9 @@ public class InMemoryTaskManager implements TaskManager {
             if (taskIntercepted.isPresent()) {
                 throw new TaskValidationException("Указанное время уже занято, задачей: " + taskIntercepted.get());
             }
-            sortedTasks.add(epic);
+            if (epic.getEndTime() != null) {
+                sortedTasks.add(epic);
+            }
         }
         epics.put(epic.getId(), epic);
         return epic.getId();
@@ -88,7 +90,9 @@ public class InMemoryTaskManager implements TaskManager {
                 if (taskIntercepted.isPresent()) {
                     throw new TaskValidationException("Указанное время уже занято, задачей: " + taskIntercepted.get());
                 }
-                sortedTasks.add(epic);
+                if (epic.getEndTime() != null) {
+                    sortedTasks.add(epic);
+                }
             }
             epics.put(epic.getId(), epic);
             return true;
@@ -119,6 +123,9 @@ public class InMemoryTaskManager implements TaskManager {
             subTasks.put(newSubTaskId, subTask);
             epic.setSubTaskId(newSubTaskId);
             updateEpicAfterSubTaskChange(epic);
+            if (epic.getEndTime() != null) {
+                sortedTasks.add(epic);
+            }
             return newSubTaskId;
         }
         return null;
@@ -141,6 +148,9 @@ public class InMemoryTaskManager implements TaskManager {
                 subTasks.put(subTaskId, subTask);
                 epic.setSubTaskId(subTaskId);
                 updateEpicAfterSubTaskChange(epic);
+                if (epic.getEndTime() != null) {
+                    sortedTasks.add(epic);
+                }
                 return true;
             }
         }
@@ -374,6 +384,9 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     private boolean isTaskTermIntercept(Task task1, Task task2) {
+        if (task1.equals(task2)) {
+            return false;
+        }
         if (task1.getStartTime().isEqual(task2.getEndTime())) {
             return false;
         }
